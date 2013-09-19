@@ -113,10 +113,16 @@ apres-midi-linux-et-logiciels-libres-22-novembre-2008/",
 "http://blog.dakarlug.org/2008/09/28/\
 on-sen-est-sorti/",
 "http://blog.dakarlug.org/2008/08/26/\
-journee-du-logiciel-libre-rendez-vous-le-20-septembre-a-lauf/"
+journee-du-logiciel-libre-rendez-vous-le-20-septembre-a-lauf/",
+"http://blog.dakarlug.org/2013/09/18/\
+journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
 
 ]
 
+_urls =[
+"http://blog.dakarlug.org/2013/09/18/\
+journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
+]
 // request
 scrapper =  function(_url){
   request(_url, function(err, resp, body){
