@@ -139,8 +139,14 @@ content\
           function(idx, html){
             var title = $(html).text()
             s = s.replace(/title/, title)
-            // META: add title
+            
+            // Markdown meta block - title
             s = 'title: ' + title.trim() + "\n" + s
+            
+            // Markdown meta block - lead
+            // no lead present in dakarlug source; use title value instead as 
+            // default value
+            s = 'lead: ' + title.trim() + "\n" + s;     
           }
       )
       $('.contentbody').each(
@@ -162,16 +168,19 @@ content\
             }
       )
       
+      // Markdown meta block - author
+      var author = $('.contentitempostedby').text().split('par')[1].trim();
+      s = 'author: ' + author + "\n" + s;
       //contentitempostedby
       
       // filename
       name= _url.split('/').slice(3, 7).join('-')
       
-      // Markdown meta block - title
-      s = 'slug: ' + name + "\n" + s
-      
-      // META: add date
-      s = 'date: ' + name.slice(0, 10) + "\n" + s
+      // Markdown meta block - slug
+      s = 'slug: ' + name + "\n" + s;
+       
+      // Markdown meta block - date
+      s = 'date: ' + name.slice(0, 10) + "\n" + s;
       
       // write file
       var str_ = fs.writeFileSync(name + ".md", s);
