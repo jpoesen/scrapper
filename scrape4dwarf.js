@@ -126,34 +126,38 @@ journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
 // request
 scrapper =  function(_url){
   request(_url, function(err, resp, body){
-    var s = '\
-title\
-![test screenshot](image "")\
-content\
-     '
+    var s = 'content'
     if (err) throw Error('error')
     else {
       $ = cheerio.load(body);
-      // Title
-      $('.contenttitle').each(
-          function(idx, html){
-            var title = $(html).text()
-            s = s.replace(/title/, title)
-            
-            // Markdown meta block - title
-            s = 'title: ' + title.trim() + "\n" + s
-            
-            // Markdown meta block - lead
-            // no lead present in dakarlug source; use title value instead as 
-            // default value
-            s = 'lead: ' + title.trim() + "\n" + s;     
-          }
-      )
-      $('.contentbody').each(
-          function(idx, html){
-            s = s.replace(/content/, $(html).text())
-          }
-      )
+
+      var title = $('.contenttitle').text();
+
+      // Markdown meta block - title
+      s = 'title: ' + title.trim() + "\n" + s
+      
+      // Markdown meta block - lead
+      // no lead present in dakarlug source; use title value instead as 
+      // default value
+      s = 'lead: ' + title.trim() + "\n" + s; 
+      
+      // main content
+      var body = $('.contentbody');
+      
+      // remove 'affice' for now
+      body.find('#affiche').remove();
+      
+      // remove social media links from main article content
+      var last_para = body.find('p:last-of-type');
+      if (last_para.text().indexOf('Rejoignez nous') != -1){
+        body.find('p:last-of-type').remove();
+      }
+      
+
+      
+      s = s.replace(/content/, "\n" + body.text().trim())
+
+
       //affiche 
       $('.contentbody img').each(
             function(idx, html){
@@ -170,20 +174,19 @@ content\
       
       // Markdown meta block - author
       var author = $('.contentitempostedby').text().split('par')[1].trim();
-      s = 'author: ' + author + "\n" + s;
-      //contentitempostedby
+      s = 'author: ' + author.toLowerCase() + "\n" + s;
       
       // filename
       name= _url.split('/').slice(3, 7).join('-')
       
       // Markdown meta block - slug
-      s = 'slug: ' + name + "\n" + s;
+      s = 'slug: ' + name.toLowerCase() + "\n" + s;
        
       // Markdown meta block - date
       s = 'date: ' + name.slice(0, 10) + "\n" + s;
       
       // write file
-      var str_ = fs.writeFileSync(name + ".md", s);
+      var str_ = fs.writeFileSync(name.toLowerCase() + ".md", s);
     }
   }
   )
