@@ -4,6 +4,7 @@ var path = require('path');
 var cheerio = require('cheerio');
 var fs = require('fs');
 var markdown = require("markdown-js");
+var toMarkdown = require('to-markdown').toMarkdown;
 
 _urls =[
 "http://blog.dakarlug.org/2013/08/14/\
@@ -119,14 +120,14 @@ journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
 
 ]
 
-_urls =[
-"http://blog.dakarlug.org/2013/09/18/\
-journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
-]
-// request
+// _urls =[
+// "http://blog.dakarlug.org/2013/09/18/\
+// journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
+// ]
+
 scrapper =  function(_url){
   request(_url, function(err, resp, body){
-    var s = 'content'
+    var s = ''
     if (err) throw Error('error')
     else {
       $ = cheerio.load(body);
@@ -141,11 +142,36 @@ scrapper =  function(_url){
       // default value
       s = 'lead: ' + title.trim() + "\n" + s; 
       
+      // Markdown meta block - author
+      var author = $('.contentitempostedby').text().split('par')[1].trim();
+      s = 'author: ' + author.toLowerCase() + "\n" + s;
+      
+      // Put together filename
+      name = _url.split('/').slice(3, 7).join('-')
+      
+      // Markdown meta block - slug
+      s = 'slug: ' + name.toLowerCase() + "\n" + s;
+       
+      // Markdown meta block - date
+      s = 'date: ' + name.slice(0, 10) + "\n" + s;      
+      
+      //Affiche?
+      var affiche = $('#affiche');
+      var aff_src = affiche.find('img').attr('src');
+      
+      var aff_link = affiche.find('a').attr('href');
+      
+      aff_markdown = "\n\n" + '[![](' + aff_src + ')](' + aff_link + ")\n\n"
+      s += aff_markdown 
+      
       // main content
       var body = $('.contentbody');
       
-      // remove 'affice' for now
+      // remove 'affiche' (we already fetched it) 
       body.find('#affiche').remove();
+      
+      // remove 'bookmarks'
+      body.find('.bookmarks').remove();
       
       // remove social media links from main article content
       var last_para = body.find('p:last-of-type');
@@ -153,45 +179,21 @@ scrapper =  function(_url){
         body.find('p:last-of-type').remove();
       }
       
+      // remove all title attributes from images (markdown converter doesn't like them)
+      body.find('img').removeAttr('title');
+            
+      //s = s.replace(/content/, "\n" + body.text().trim())
+      s += toMarkdown(body.html());
 
-      
-      s = s.replace(/content/, "\n" + body.text().trim())
-
-
-      //affiche 
-      $('.contentbody img').each(
-            function(idx, html){
-              src = $(html).attr("src")
-              if (src.indexOf('media') != -1){
-              // We got the image for article
-              if (src.indexOf('http') ==-1){
-                src = "http://blog.dakarlug.org/" + src
-              }
-              s = s.replace(/image/, src) 
-              }
-            }
-      )
-      
-      // Markdown meta block - author
-      var author = $('.contentitempostedby').text().split('par')[1].trim();
-      s = 'author: ' + author.toLowerCase() + "\n" + s;
-      
-      // filename
-      name= _url.split('/').slice(3, 7).join('-')
-      
-      // Markdown meta block - slug
-      s = 'slug: ' + name.toLowerCase() + "\n" + s;
-       
-      // Markdown meta block - date
-      s = 'date: ' + name.slice(0, 10) + "\n" + s;
-      
       // write file
       var str_ = fs.writeFileSync(name.toLowerCase() + ".md", s);
     }
   }
   )
 }
-//Ha!
+
+//Scrape all links now
 for( var i =0; i< _urls.length;i++){
-  scrapper(_urls[i])
+  console.log('scraping: ' + _urls[i]);
+  scrapper(_urls[i]);
 }
