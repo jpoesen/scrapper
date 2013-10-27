@@ -121,8 +121,8 @@ journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
 ]
 
 _urls =[
-"http://blog.dakarlug.org/2013/08/14/\
-apres-midi-17-aout-2013-pour-reparer-dakarlug/",
+"http://blog.dakarlug.org/2009/01/22/\
+resume-apres-midi-linux-et-logiciels-libres17012009/",
 ]
 
 scrapper =  function(_url){
@@ -174,7 +174,6 @@ scrapper =  function(_url){
         $('.entry').replaceWith($('.entry').html());  
       }
       
-      
       var body = $('.contentbody');
       
       // remove 'affiche' (we already fetched it) 
@@ -196,10 +195,15 @@ scrapper =  function(_url){
         $(this).replaceWith( "<strong>" + $(this).html() + "</strong>" );
       });
       
-      // remove tags <span class=""> but keep content.
+      // remove tags <span class="caps"> but keep content.
       $('span[class="caps"]').each(function() {
         $(this).replaceWith(this.html());
       });
+      
+      // remove tags <span class="amp"> but keep content.
+      $('span[class="amp"]').each(function() {
+        $(this).replaceWith(this.html());
+      });      
       
       // remove <div align="center"> but keep content.
       $('div[align="center"]').each(function() {
@@ -208,10 +212,18 @@ scrapper =  function(_url){
             
       // remove all title attributes from images (markdown converter doesn't like them)
       body.find('img').removeAttr('title');
-            
+                
       //s = s.replace(/content/, "\n" + body.text().trim())
       s += toMarkdown(body.html());
       
+      // replace unwanted character entities
+      s = s.replace(/\&mdash\;/g, "-");
+      s = s.replace(/\&nbsp\;/g, " ") 
+      s = s.replace(/\&\#8217\;/g, " ")
+      
+      // replace untransformed <li> and </li> elements
+      s = s.replace(/\<li\>/g, "* ") 
+      s = s.replace(/\<\/li\>/g, "") 
 
       // write file
       var str_ = fs.writeFileSync(name.toLowerCase() + ".md", s);
