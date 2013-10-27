@@ -120,10 +120,10 @@ journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
 
 ]
 
-// _urls =[
-// "http://blog.dakarlug.org/2013/09/18/\
-// journee-mondiale-des-logiciels-libres-edition-2013-dakar/"
-// ]
+_urls =[
+"http://blog.dakarlug.org/2013/08/14/\
+apres-midi-17-aout-2013-pour-reparer-dakarlug/",
+]
 
 scrapper =  function(_url){
   request(_url, function(err, resp, body){
@@ -156,15 +156,25 @@ scrapper =  function(_url){
       s = 'date: ' + name.slice(0, 10) + "\n" + s;      
       
       //Affiche?
-      var affiche = $('#affiche');
-      var aff_src = affiche.find('img').attr('src');
-      
-      var aff_link = affiche.find('a').attr('href');
-      
-      aff_markdown = "\n\n" + '[![](' + aff_src + ')](' + aff_link + ")\n\n"
-      s += aff_markdown 
+      if ($('#affiche').length != 0) {
+        var affiche = $('#affiche');
+        var aff_src = affiche.find('img').attr('src');
+        var aff_link = affiche.find('a').attr('href');
+        
+        aff_markdown = "\n\n" + '[![](' + aff_src + ')](' + aff_link + ")\n\n";
+        s += aff_markdown;
+      }
+
       
       // main content
+      
+      // remove wrapping 'entry' div, if any.
+      // normally we'd use .unwrap() but cheerio doesn't support that.
+      if ($('.entry').length != 0) {
+        $('.entry').replaceWith($('.entry').html());  
+      }
+      
+      
       var body = $('.contentbody');
       
       // remove 'affiche' (we already fetched it) 
@@ -178,12 +188,30 @@ scrapper =  function(_url){
       if (last_para.text().indexOf('Rejoignez nous') != -1){
         body.find('p:last-of-type').remove();
       }
+      $('strong:contains("Rejoignez nous sur nos réseaux sociaux")+ul').remove();
+      $('strong:contains("Rejoignez nous sur nos réseaux sociaux")').remove();
       
+      // replace <span style="font-weight: bold"> with <strong>
+      $('span[style="font-weight: bold;"]').each(function() {
+        $(this).replaceWith( "<strong>" + $(this).html() + "</strong>" );
+      });
+      
+      // remove tags <span class=""> but keep content.
+      $('span[class="caps"]').each(function() {
+        $(this).replaceWith(this.html());
+      });
+      
+      // remove <div align="center"> but keep content.
+      $('div[align="center"]').each(function() {
+        $(this).replaceWith(this.html());
+      });      
+            
       // remove all title attributes from images (markdown converter doesn't like them)
       body.find('img').removeAttr('title');
             
       //s = s.replace(/content/, "\n" + body.text().trim())
       s += toMarkdown(body.html());
+      
 
       // write file
       var str_ = fs.writeFileSync(name.toLowerCase() + ".md", s);
