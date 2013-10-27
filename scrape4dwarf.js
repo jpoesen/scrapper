@@ -209,7 +209,20 @@ scrapper =  function(_url){
       $('div[align="center"]').each(function() {
         $(this).replaceWith(this.html());
       });      
-            
+      
+      // remove gallery tag set but keep content.
+      $('div[class="gallery"]').each(function() {
+        $(this).replaceWith(this.html());
+      });       
+      
+      $('dl[class="gallery-item"]').each(function() {
+        $(this).replaceWith(this.html());
+      });        
+      
+      $('dt[class="gallery-icon"]').each(function() {
+        $(this).replaceWith("* " + this.html());
+      });        
+      
       // remove all title attributes from images (markdown converter doesn't like them)
       body.find('img').removeAttr('title');
                 
@@ -224,6 +237,7 @@ scrapper =  function(_url){
       // replace untransformed <li> and </li> elements
       s = s.replace(/\<li\>/g, "* ") 
       s = s.replace(/\<\/li\>/g, "") 
+      s = s.replace(/\t/g, "") 
 
       // write file
       var str_ = fs.writeFileSync(name.toLowerCase() + ".md", s);
